@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scroll Screenshot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>📸 滚动截屏</h1>
+    
+    <div class="settings">
+      <div class="setting-item">
+        <label for="scrollHeight">滚动高度 (px):</label>
+        <input type="number" id="scrollHeight" value="500" min="100" max="2000">
+      </div>
+      
+      <div class="setting-item">
+        <label for="delayTime">延迟时间 (ms):</label>
+        <input type="number" id="delayTime" value="500" min="100" max="5000">
+      </div>
+      
+      <div class="setting-item">
+        <label for="quality">图片质量 (0-1):</label>
+        <input type="number" id="quality" value="0.95" min="0.1" max="1" step="0.05">
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button id="startBtn" class="btn btn-primary">开始截屏</button>
+      <button id="stopBtn" class="btn btn-danger" disabled>停止</button>
+    </div>
+
+    <div id="progress" class="progress" style="display: none;">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <p id="progressText">进度: 0%</p>
+    </div>
+
+    <div id="message" class="message"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
