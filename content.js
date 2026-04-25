@@ -36,14 +36,8 @@ async function startScrollCapture(settings) {
     // 开始滚动和截屏
     while (isCapturing && window.scrollY < pageHeight - viewportHeight - 10) {
       // 截屏当前视图
-      const canvas = await html2canvas(document.documentElement, {
-        allowTaint: true,
-        useCORS: true,
-        scale: 1,
-        backgroundColor: '#ffffff'
-      });
-      
-      screenshots.push(canvas);
+      const imageData = await captureScreenshot();
+      screenshots.push(imageData);
       currentScroll++;
       
       // 更新进度
@@ -62,22 +56,16 @@ async function startScrollCapture(settings) {
 
     // 最后截一屏
     if (isCapturing) {
-      const canvas = await html2canvas(document.documentElement, {
-        allowTaint: true,
-        useCORS: true,
-        scale: 1,
-        backgroundColor: '#ffffff'
-      });
-      screenshots.push(canvas);
+      const imageData = await captureScreenshot();
+      screenshots.push(imageData);
     }
 
     // 拼接所有截屏
     if (screenshots.length > 0) {
-      const mergedCanvas = mergeCanvases(screenshots);
-      const imageData = mergedCanvas.toDataURL('image/png', quality);
+      const mergedDataUrl = await mergeImages(screenshots, quality);
       
       // 下载图片
-      downloadImage(imageData, 'scroll-screenshot.png');
+      downloadImage(mergedDataUrl, 'scroll-screenshot.png');
       
       chrome.runtime.sendMessage({
         action: 'captureComplete'
@@ -98,15 +86,20 @@ async function startScrollCapture(settings) {
   }
 }
 
-function mergeCanvases(canvases) {
-  if (canvases.length === 0) return null;
+async function mergeImages(imageUrls, quality) {
+  if (imageUrls.length === 0) return null;
 
-  const width = canvases[0].width;
-  let totalHeight = 0;
-  
-  canvases.forEach(canvas => {
-    totalHeight += canvas.height;
-  });
+  const images = await Promise.all(imageUrls.map(url => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to load screenshot image'));
+      img.src = url;
+    });
+  }));
+
+  const width = images[0].width;
+  const totalHeight = images.reduce((sum, img) => sum + img.height, 0);
 
   const mergedCanvas = document.createElement('canvas');
   mergedCanvas.width = width;
@@ -115,12 +108,12 @@ function mergeCanvases(canvases) {
   const ctx = mergedCanvas.getContext('2d');
   let currentY = 0;
   
-  canvases.forEach(canvas => {
-    ctx.drawImage(canvas, 0, currentY);
-    currentY += canvas.height;
+  images.forEach(img => {
+    ctx.drawImage(img, 0, currentY);
+    currentY += img.height;
   });
 
-  return mergedCanvas;
+  return mergedCanvas.toDataURL('image/png', quality);
 }
 
 function downloadImage(imageData, filename) {

@@ -1,1 +1,21 @@
-{"manifest_version": 3, "name": "Scroll Screenshot", "version": "1.0.0", "description": "Capture full-page screenshots by scrolling from the current position", "permissions": ["activeTab", "scripting", "tabs", "storage"], "action": {"default_popup": "popup.html", "default_title": "Scroll Screenshot"}, "background": {"service_worker": "background.js"}}
+{
+  "manifest_version": 3,
+  "name": "Scroll Screenshot",
+  "version": "1.0.0",
+  "description": "Capture full-page screenshots by scrolling from the current position",
+  "permissions": ["activeTab", "scripting", "tabs", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Scroll Screenshot"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}
